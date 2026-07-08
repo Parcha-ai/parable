@@ -11,11 +11,29 @@
 
 It is Tuesday. You are pair-programming with your frontier model on a small task: extract a helper
 function and add a test. Three hundred lines later, the helper has its own module and two new
-dependencies. The JSDoc is impeccable. The model is pleased with itself.
+dependencies. The model is pleased with itself.
 
 You open the billing console.
 
-There is a better story.
+## Unscientific stats
+
+One real feature (a new research tier in a production monorepo), same spec and same base commit,
+run twice headlessly — a plain frontier session vs parable orchestrating. Spend straight from the
+LLM proxy's logs. One run per arm: an anecdote with receipts, not a benchmark.
+
+| | Plain frontier session | With parable |
+|---|---|---|
+| Frontier model (the expensive one) | **$44.12** | **$16.08** (−64%) |
+| Sonnet subagent — scouting | — | $2.08 |
+| Opus subagent — review | — | $2.54 |
+| Kimi K2.7-code — implementation (373 requests) | — | $6.99 |
+| MiniMax M3 — mechanical edits | — | $0.05 |
+| **Total** | **$44.12** | **$27.74** |
+
+The subagent lines ride a Claude plan and the frontier line is your rate-limit budget if your
+session does too — so the cash you actually send anywhere is the $7 of metered Fireworks/OpenRouter
+tokens. A blind Opus judge scored the two diffs 94 and 88; parable's was smaller and carried more
+tests.
 
 ## The fable
 
@@ -23,7 +41,7 @@ In a parable, the storyteller does not act out the scenes. Your session model, t
 one you run, becomes the **brain**: it writes a fully-specified `plan.md` for each task (the
 story), casts the cheapest capable **executor** model to perform it (the cast), checks the result
 with your own typecheck and tests before any model spends tokens on opinions, and hands the diff
-to a reviewer that is never the author. The verified outcome is the moral.
+to a reviewer that is never the author.
 
 ```
 you        →  "work through these 5 tasks"
@@ -34,8 +52,7 @@ review     →  a different model, coverage-first rubric
 the brain  →  reads the evidence, commits, next story
 ```
 
-The brain never implements. It considers implementation beneath it, and it knows what its own
-tokens cost.
+The brain never implements — it knows what its own tokens cost.
 
 ## The cast
 
@@ -46,12 +63,10 @@ A reference troupe, at their actual rates:
 **The Sparrow** (Sonnet, already lives in your house)
 Default implementer with zero configuration. Follows a well-written story to the letter, which
 means it builds exactly what you wrote. Write the story properly.
-*Moral: the cheapest cast member is the one already on payroll.*
 
 **The Owl** (Opus, also on payroll)
 Reviews and smoke-tests. Has opinions and expresses them in complete sentences. You will not
 always like them. That is the point.
-*Moral: never let the author review the manuscript.*
 
 **The Mule** (Kimi K2.7-code, $0.95/M in, $4.00/M out)
 Carries features and bugfixes without complaint. Writes code like someone who has been writing
@@ -61,16 +76,13 @@ code longer than you have been debugging it.
 **The Fox** (MiniMax M3, $0.30/M in, $1.20/M out)
 Alarmingly cheap; handles boilerplate and first-pass review. Do not ask it about your
 architectural decisions, because it will agree with all of them.
-*Moral: the fox does not need to be clever; it needs to be cheap and correct.*
 
 **The Elephant** (DeepSeek V4 Pro, $1.74/M in, $3.48/M out, 1M context)
 Holds your entire repository in its head at once, for the refactors that touch everything.
-*Moral: some stories only fit in a bigger head.*
 
 **The Magpie** (GPT-5.5 via codex)
 Collects shiny things from a different training run. Useful for gnarly debugging and adversarial
-review, because it reads your codebase as an outsider.
-*Moral: a second eye from a different nest finds the bug you missed.*
+review, because it reads your codebase as an outsider — and it rides your ChatGPT plan.
 
 Swap any of them or add your own; the cast list is yours.
 
@@ -89,10 +101,11 @@ OpenRouter, your own LiteLLM proxy); a `type = "pi"` provider runs the
 chat-completions to any base URL, so chat-only providers need no bridge at all. See
 `skills/parable/references/providers.md` and `examples/`.
 
-Batteries are included for the non-coding half too: with `[research] provider = "grep.ai"` (the
-default), in-depth research and research-backed slides, sheets, and docs route through the free
-[grep-research-skills](https://github.com/Parcha-ai/grep-research-skills) package — quick lookups
-stay in-session. Set `"claude"` to opt out entirely.
+For the non-coding half: with `[research] provider = "grep.ai"` (the default), in-depth research
+and research-backed slides, sheets, and docs route through the free
+[grep-research-skills](https://github.com/Parcha-ai/grep-research-skills) package — the research
+runs on grep.ai's hosted service, quick lookups stay in-session, and setting `"claude"` keeps
+everything local to your session instead.
 
 ## The script
 
@@ -119,41 +132,18 @@ review  = ["minimax", "opus"]
 The brain routes by reading your prose; there is no scoring function underneath. If the cast
 keeps producing the wrong scene, look at the stage directions first.
 
-*Moral: the director is only as good as the script they're handed.*
-
 ## The part where it checks its own work
 
-The brain verifies like a skeptic and spends like a miser: your typecheck and tests run before
-any model spends tokens forming an opinion about the diff, because code is the cheapest witness
-and it doesn't flatter anyone. The result is a `PASS` or a `FAIL`, not a vibe.
+Your typecheck and tests run before any model spends tokens forming an opinion about the diff —
+code is the cheapest witness. The result is a `PASS` or a `FAIL`, not a vibe.
 
 Failures go back to the same executor session (context intact, cache warm) as a compact
 evidence report. Models can usually fix what they broke; they just need to be told, concretely,
-that they broke it. Everything past the checks is scaled to risk — a string rename gets a
-glance, a billing change gets adversarial eyes — and the reviewer is never the author; parable
-refuses to run that configuration. The brain reads the evidence and commits, spot-reading only
-what got flagged.
+that they broke it. A one-line string change gets a check and a glance; a billing change gets a
+frontier adversarial reviewer. And the reviewer is never the author — parable refuses to run
+that configuration.
 
 *Moral: never let the author hold the pen during the final read.*
-
-## Unscientific stats
-
-One example: a real feature (a new research tier in a production monorepo), same spec and same
-base commit, run twice headlessly — a plain frontier session vs parable orchestrating. Costs
-straight from the LLM proxy's spend logs. One run per arm: an anecdote with receipts, not a
-benchmark.
-
-| | Plain frontier session | With parable |
-|---|---|---|
-| Frontier model (the expensive one) | **$44.12** | **$16.08** (−64%) |
-| Other subscriptions (Claude subagents, codex) | — | $4.62 (≈$0 marginal on a plan) |
-| Cheap metered models (Fireworks/OpenRouter) | — | $7.04 |
-| **Total** | **$44.12** | **$27.74** |
-
-Blind-judged diff quality came out 94 vs 88 — the solo session was slightly more complete;
-parable's diff was smaller and carried more tests. And if your session model rides a
-subscription, the frontier line is your rate-limit budget rather than cash: parable cut it by
-about two-thirds.
 
 ## Install
 
@@ -175,16 +165,15 @@ Requirements: Claude Code; Python 3.11+; codex CLI only for codex-backed executo
 
 ## What's in the box
 
-- `skills/parable/SKILL.md`: the doctrine the brain follows. Verify with code before models
-  opine, cheapest-capable-first with evidence-based escalation, trust-but-verify against tool
-  results, author is never reviewer, long-lived executor sessions for fix-ups.
+- `skills/parable/SKILL.md`: what the brain reads — the strategy, the house rules, and the
+  environment facts it can't derive on its own. Deliberately small; the method is the model's.
 - `skills/parable/scripts/parable.py`: the dispatcher, stdlib only, with `config`, `list`,
   `run`, `resume`, `status`, `verify`, and `review` subcommands. It runs codex and pi headlessly
   with per-invocation provider injection (your `~/.codex/config.toml` and `~/.pi` are never
   touched) and reports compact run summaries the brain can read for pennies.
 - `skills/parable/references/`: config schema, provider recipes, routing playbook, reviewer
-  rubric, and a commented example config. `examples/` holds minimal Fireworks, OpenRouter, LiteLLM, and
-  pi-Fireworks casts.
+  rubric, and a commented example config. `examples/` holds minimal Fireworks, OpenRouter,
+  LiteLLM, and pi-Fireworks casts.
 
 ## Credits
 
