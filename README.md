@@ -9,7 +9,7 @@
 
 **Multi-model coding orchestration for Claude Code.**
 
-It is Tuesday. You are pair-programming with your frontier model on a small task: extract a helper
+It is Tuesday. You are pair-programming with Fable on a small task: extract a helper
 function and add a test. Three hundred lines later, the helper has its own module and two new
 dependencies. The model is pleased with itself.
 
@@ -18,19 +18,19 @@ You open the billing console.
 ## Unscientific stats
 
 One real feature (a new research tier in a production monorepo), same spec and same base commit,
-run twice headlessly — a plain frontier session vs parable orchestrating. Spend straight from the
+run twice headlessly — a plain Fable session vs parable orchestrating, Fable as the brain. Spend straight from the
 LLM proxy's logs. One run per arm: an anecdote with receipts, not a benchmark.
 
-| | Plain frontier session | With parable |
+| | Plain Fable session | With parable |
 |---|---|---|
-| Frontier model (the expensive one) | **$44.12** | **$16.08** (−64%) |
+| Fable (the expensive one) | **$44.12** | **$16.08** (−64%) |
 | Sonnet subagent — scouting | — | $2.08 |
 | Opus subagent — review | — | $2.54 |
 | Kimi K2.7-code — implementation (373 requests) | — | $6.99 |
 | MiniMax M3 — mechanical edits | — | $0.05 |
 | **Total** | **$44.12** | **$27.74** |
 
-The subagent lines ride a Claude plan and the frontier line is your rate-limit budget if your
+The subagent lines ride a Claude plan and the Fable line is your rate-limit budget if your
 session does too — so the cash you actually send anywhere is the $7 of metered Fireworks/OpenRouter
 tokens. A blind Opus judge scored the two diffs 94 and 88; parable's was smaller and carried more
 tests.
