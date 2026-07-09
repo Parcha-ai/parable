@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Moved.** This project now lives at [miguelrios/unc-skills](https://github.com/miguelrios/unc-skills) (full history preserved via subtree). This repo is archived.
+
 # parable
 
 <p align="center">
